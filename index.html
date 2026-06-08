@@ -1163,9 +1163,21 @@
 
     function scoreFor(destination, mode = sortMode) {
       const scores = rankings[destination.id] || {};
-      if (mode !== "combined") return scores[mode] || 0;
-      const total = people.reduce((sum, person) => sum + (scores[person.id] || 0), 0);
-      return Math.round(total / people.length);
+      if (mode !== "combined") return scores[mode] || null;
+
+      const assignedScores = people
+        .map((person) => scores[person.id])
+        .filter((score) => Number.isInteger(score));
+
+      if (!assignedScores.length) return null;
+
+      const total = assignedScores.reduce((sum, score) => sum + score, 0);
+      return total / assignedScores.length;
+    }
+
+    function formatScore(score) {
+      if (!Number.isFinite(score)) return "-";
+      return Number.isInteger(score) ? String(score) : score.toFixed(1);
     }
 
     function rankedCountFor(destination) {
@@ -1182,7 +1194,11 @@
           rankedCount: rankedCountFor(destination)
         }))
         .sort((a, b) => {
-          if (b.sortScore !== a.sortScore) return b.sortScore - a.sortScore;
+          const aHasScore = Number.isFinite(a.sortScore);
+          const bHasScore = Number.isFinite(b.sortScore);
+          if (aHasScore && !bHasScore) return -1;
+          if (!aHasScore && bHasScore) return 1;
+          if (aHasScore && bHasScore && a.sortScore !== b.sortScore) return a.sortScore - b.sortScore;
           if (b.rankedCount !== a.rankedCount) return b.rankedCount - a.rankedCount;
           return a.order - b.order;
         });
@@ -1270,7 +1286,7 @@
 
     function buildOptions(selectedScore) {
       let options = '<option value="">-</option>';
-      for (let score = 100; score >= 1; score -= 1) {
+      for (let score = 1; score <= 100; score += 1) {
         const selected = score === selectedScore ? " selected" : "";
         options += `<option value="${score}"${selected}>${score}</option>`;
       }
@@ -1278,7 +1294,7 @@
     }
 
     function renderTopList(sorted) {
-      const ranked = sorted.filter((destination) => destination.sortScore > 0);
+      const ranked = sorted.filter((destination) => Number.isFinite(destination.sortScore));
       const counts = Object.fromEntries(
         people.map((person) => [
           person.id,
@@ -1293,7 +1309,7 @@
         return;
       }
 
-      topListEl.innerHTML = ranked.slice(0, 6).map((destination) => {
+      topListEl.innerHTML = ranked.map((destination) => {
         const scores = rankings[destination.id] || {};
         const detail = people
           .map((person) => `${person.label}: ${scores[person.id] || "-"}`)
@@ -1301,7 +1317,7 @@
 
         return `
           <li>
-            <span class="top-score">${destination.sortScore}</span>
+            <span class="top-score">${formatScore(destination.sortScore)}</span>
             <span>
               <span class="top-name">${escapeHtml(destination.name)}</span>
               <span class="top-detail">${escapeHtml(detail)}</span>
@@ -1319,7 +1335,7 @@
     }
 
     function buildResultsText() {
-      const ranked = sortedDestinations("combined").filter((destination) => destination.sortScore > 0);
+      const ranked = sortedDestinations("combined").filter((destination) => Number.isFinite(destination.sortScore));
       const date = new Date().toLocaleString(undefined, {
         year: "numeric",
         month: "short",
@@ -1347,7 +1363,7 @@
         const scoreText = people
           .map((person) => `${person.label}: ${scores[person.id] || "-"}`)
           .join(" | ");
-        return `${rank}. Combined ${destination.sortScore} - ${destination.name} (${scoreText}; ${destination.area}, ${destination.time})`;
+        return `${rank}. Combined ${formatScore(destination.sortScore)} - ${destination.name} (${scoreText}; ${destination.area}, ${destination.time})`;
       });
 
       return [
@@ -1360,7 +1376,7 @@
         "",
         `Open ranked list: ${buildShareUrl()}`,
         "",
-        "Scale: 100 = highest interest, 1 = lowest interest. Combined score averages Barbara and Laura, with blank scores counted as 0."
+        "Scale: 1 = highest interest, 100 = lowest interest. Combined score averages the assigned Barbara and Laura ranks; blank ranks are ignored and unranked destinations sort last."
       ].join("\n");
     }
 
@@ -1385,15 +1401,15 @@
     function renderDestinations(focusedId = null, focusedPersonId = null) {
       const sorted = sortedDestinations();
       const visible = destinationsForCategory(sorted);
-      renderTopList(sorted);
+      renderTopList(sortedDestinations("combined"));
       renderSortButtons();
       renderFilterButtons(sorted);
       renderFilterCount(visible.length);
 
       listEl.innerHTML = visible.map((destination) => {
         const scores = rankings[destination.id] || {};
-        const scoreText = destination.sortScore ? destination.sortScore : "-";
-        const ribbonClass = destination.sortScore ? "score-ribbon" : "score-ribbon is-empty";
+        const scoreText = formatScore(destination.sortScore);
+        const ribbonClass = Number.isFinite(destination.sortScore) ? "score-ribbon" : "score-ribbon is-empty";
         const fallback = destination.name.slice(0, 1);
         const categoryTags = destination.categoryIds.map(categoryLabel);
         const tags = [...categoryTags, destination.area, destination.time, effortLabel(destination.effort), destination.note]
@@ -1408,7 +1424,7 @@
               id="rank-${escapeHtml(destination.id)}-${escapeHtml(person.id)}"
               data-rank-id="${escapeHtml(destination.id)}"
               data-person-id="${escapeHtml(person.id)}"
-              aria-label="${escapeHtml(person.label)} rank for ${escapeHtml(destination.name)}, 100 high"
+              aria-label="${escapeHtml(person.label)} rank for ${escapeHtml(destination.name)}, 1 is most preferred"
             >
               ${buildOptions(scores[person.id] || 0)}
             </select>
