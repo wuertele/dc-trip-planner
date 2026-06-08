@@ -1,0 +1,1558 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Washington DC One-Day Trip Picker</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f3efe4;
+      --paper-strong: #fffaf0;
+      --ink: #181b1f;
+      --muted: #5d6268;
+      --line: #cec2a8;
+      --civic: #153e6f;
+      --civic-2: #2f6b95;
+      --brick: #a13e36;
+      --brass: #a8762b;
+      --garden: #386c4e;
+      --ice: #e8f1f4;
+      --white: #fffdf7;
+      --shadow: 0 18px 38px rgba(31, 35, 39, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+      letter-spacing: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(21, 62, 111, 0.08) 0 1px, transparent 1px 100%),
+        linear-gradient(0deg, rgba(161, 62, 54, 0.055) 0 1px, transparent 1px 100%),
+        linear-gradient(125deg, #f7f4ec 0%, var(--paper) 44%, #e7eff1 100%);
+      background-size: 46px 46px, 46px 46px, auto;
+      font-family: "Avenir Next", "Gill Sans", "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    button,
+    select {
+      font: inherit;
+    }
+
+    .app {
+      width: min(1180px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 18px 0 42px;
+    }
+
+    .masthead {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 0.58fr);
+      gap: 18px;
+      align-items: stretch;
+      margin-bottom: 16px;
+    }
+
+    .title-block {
+      position: relative;
+      overflow: hidden;
+      min-height: 256px;
+      padding: 24px;
+      color: var(--white);
+      background:
+        linear-gradient(102deg, rgba(21, 38, 58, 0.92), rgba(21, 62, 111, 0.68)),
+        url("https://commons.wikimedia.org/wiki/Special:FilePath/Capitol_Building_Full_View.jpg?width=1400") center / cover;
+      border: 1px solid rgba(255, 253, 247, 0.24);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .title-block::after {
+      position: absolute;
+      inset: auto 0 0;
+      height: 7px;
+      content: "";
+      background: linear-gradient(90deg, var(--brick), var(--brass), var(--garden), var(--civic-2));
+    }
+
+    .kicker {
+      margin: 0 0 10px;
+      color: #f0d790;
+      font-size: 0.87rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 760px;
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 3rem;
+      line-height: 0.98;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      max-width: 620px;
+      margin: 16px 0 0;
+      color: rgba(255, 253, 247, 0.88);
+      font-size: 1rem;
+      line-height: 1.45;
+    }
+
+    .summary-panel {
+      display: flex;
+      min-height: 256px;
+      flex-direction: column;
+      gap: 14px;
+      padding: 18px;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .summary-top {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .summary-title {
+      margin: 0;
+      color: var(--civic);
+      font-size: 0.84rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .count-pill {
+      min-width: 142px;
+      padding: 6px 10px;
+      color: var(--white);
+      background: var(--civic);
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 900;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .top-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .top-list li,
+    .empty-state {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      gap: 10px;
+      align-items: center;
+      min-height: 40px;
+      padding: 8px 9px;
+      background: #f1eadc;
+      border: 1px solid rgba(206, 194, 168, 0.9);
+      border-radius: 8px;
+    }
+
+    .top-score {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 26px;
+      color: var(--white);
+      background: var(--brick);
+      border-radius: 7px;
+      font-weight: 900;
+    }
+
+    .top-name {
+      overflow: hidden;
+      font-weight: 900;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .top-detail {
+      display: block;
+      overflow: hidden;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 800;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .empty-state {
+      grid-template-columns: 1fr;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .panel-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .action-button {
+      flex: 1 1 112px;
+      min-height: 42px;
+      padding: 9px 12px;
+      color: var(--civic);
+      background: var(--ice);
+      border: 1px solid rgba(21, 62, 111, 0.2);
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 900;
+    }
+
+    .action-button:hover {
+      background: #dcecf0;
+    }
+
+    .status-line {
+      min-height: 20px;
+      margin: -4px 0 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .control-panel {
+      display: grid;
+      grid-template-columns: minmax(190px, 0.24fr) minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: rgba(255, 253, 247, 0.88);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 10px 22px rgba(31, 35, 39, 0.08);
+    }
+
+    .control-title {
+      margin: 0 0 3px;
+      color: var(--civic);
+      font-size: 0.8rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .control-count {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+
+    .control-groups {
+      display: grid;
+      gap: 9px;
+      justify-items: end;
+    }
+
+    .sort-buttons,
+    .filter-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      justify-content: flex-end;
+    }
+
+    .sort-button,
+    .filter-button {
+      min-height: 36px;
+      padding: 7px 10px;
+      color: var(--civic);
+      background: var(--paper-strong);
+      border: 1px solid rgba(21, 62, 111, 0.18);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 900;
+    }
+
+    .sort-button:hover,
+    .filter-button:hover {
+      background: #f4e8d4;
+    }
+
+    .sort-button[aria-pressed="true"],
+    .filter-button[aria-pressed="true"] {
+      color: var(--white);
+      background: var(--brick);
+      border-color: rgba(161, 62, 54, 0.42);
+    }
+
+    .destination-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .destination-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(260px, 0.86fr) minmax(0, 1.14fr);
+      overflow: hidden;
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 12px 26px rgba(31, 35, 39, 0.1);
+    }
+
+    .destination-card.is-pulse {
+      animation: pulseCard 420ms ease-out;
+    }
+
+    @keyframes pulseCard {
+      0% {
+        outline: 0 solid rgba(161, 62, 54, 0);
+      }
+
+      40% {
+        outline: 6px solid rgba(161, 62, 54, 0.18);
+      }
+
+      100% {
+        outline: 0 solid rgba(161, 62, 54, 0);
+      }
+    }
+
+    .score-ribbon {
+      position: absolute;
+      z-index: 2;
+      top: 12px;
+      left: 12px;
+      display: grid;
+      min-width: 58px;
+      min-height: 42px;
+      padding: 6px 9px;
+      color: var(--white);
+      background: var(--civic);
+      border: 1px solid rgba(255, 253, 247, 0.28);
+      border-radius: 8px;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+      font-weight: 900;
+      text-align: center;
+    }
+
+    .score-ribbon.is-empty {
+      color: rgba(255, 253, 247, 0.78);
+      background: rgba(21, 38, 58, 0.76);
+    }
+
+    .score-ribbon small {
+      display: block;
+      margin-top: 1px;
+      font-size: 0.62rem;
+      line-height: 1;
+      text-transform: uppercase;
+    }
+
+    .photo {
+      position: relative;
+      min-height: 100%;
+      margin: 0;
+      background: var(--civic);
+    }
+
+    .photo::before {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      color: rgba(255, 253, 247, 0.28);
+      content: attr(data-fallback);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 5rem;
+      font-weight: 800;
+    }
+
+    .photo img {
+      position: relative;
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 270px;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+    }
+
+    .photo.is-missing img {
+      opacity: 0;
+    }
+
+    .photo-credit {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      padding: 5px 7px;
+      color: var(--white);
+      background: rgba(24, 27, 31, 0.68);
+      border-radius: 7px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .card-body {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      gap: 12px;
+      padding: 18px;
+    }
+
+    .card-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(246px, 300px);
+      gap: 14px;
+      align-items: start;
+    }
+
+    h2 {
+      margin: 0;
+      color: var(--civic);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 1.54rem;
+      line-height: 1.08;
+    }
+
+    .rank-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .rank-control {
+      display: grid;
+      gap: 6px;
+      justify-items: stretch;
+    }
+
+    .rank-control label {
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .ranking-select {
+      width: 100%;
+      min-height: 42px;
+      padding: 8px 32px 8px 10px;
+      color: var(--ink);
+      background: var(--paper-strong);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 900;
+    }
+
+    .ranking-select:focus {
+      outline: 3px solid rgba(161, 62, 54, 0.28);
+      outline-offset: 2px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      min-height: 31px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .meta li {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 5px 8px;
+      color: var(--civic);
+      background: #edf2f8;
+      border: 1px solid rgba(21, 62, 111, 0.15);
+      border-radius: 7px;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .meta li:nth-child(2n) {
+      color: #7a421d;
+      background: #fbf0de;
+      border-color: rgba(168, 118, 43, 0.2);
+    }
+
+    .meta li:nth-child(3n) {
+      color: var(--garden);
+      background: #eef6ef;
+      border-color: rgba(56, 108, 78, 0.16);
+    }
+
+    .copy {
+      display: grid;
+      gap: 9px;
+      margin-top: auto;
+    }
+
+    .copy p {
+      margin: 0;
+      color: #292d31;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .source-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 12px;
+      padding-top: 4px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .source-row a {
+      color: var(--civic);
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+    }
+
+    .footer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      justify-content: space-between;
+      margin-top: 18px;
+      padding: 14px 2px 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 800;
+    }
+
+    .footer a {
+      color: var(--civic);
+      text-underline-offset: 3px;
+    }
+
+    @media (max-width: 920px) {
+      .app {
+        width: min(100% - 18px, 660px);
+        padding-top: 9px;
+      }
+
+      .masthead,
+      .destination-card {
+        grid-template-columns: 1fr;
+      }
+
+      .title-block,
+      .summary-panel {
+        min-height: unset;
+      }
+
+      .title-block {
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 2.22rem;
+        line-height: 1;
+      }
+
+      .subtitle {
+        font-size: 0.96rem;
+      }
+
+      .control-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .control-groups,
+      .sort-buttons,
+      .filter-buttons {
+        justify-items: stretch;
+        justify-content: flex-start;
+      }
+
+      .photo img {
+        min-height: 230px;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .card-head,
+      .rank-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .rank-control {
+        grid-template-columns: minmax(0, 1fr) minmax(118px, 142px);
+        align-items: center;
+      }
+
+      .panel-actions {
+        flex-direction: column;
+      }
+
+      .sort-buttons,
+      .filter-buttons {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .sort-button,
+      .filter-button {
+        width: 100%;
+      }
+
+      h1 {
+        font-size: 1.92rem;
+      }
+
+      .count-pill {
+        min-width: 118px;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+      }
+
+      .app {
+        width: 100%;
+        padding: 0;
+      }
+
+      .masthead {
+        display: block;
+      }
+
+      .title-block,
+      .summary-panel,
+      .destination-card {
+        box-shadow: none;
+      }
+
+      .title-block {
+        min-height: unset;
+        color: var(--ink);
+        background: #fff;
+      }
+
+      .subtitle {
+        color: var(--muted);
+      }
+
+      .panel-actions,
+      .control-panel,
+      .photo-credit {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="masthead">
+      <section class="title-block" aria-labelledby="page-title">
+        <p class="kicker">Washington DC - 1 day - 2 adults</p>
+        <h1 id="page-title">Barbara and Laura Trip Picker</h1>
+        <p class="subtitle">Thursday, May 27, 2027. A one-day shortlist of museums, monuments, memorials, Capitol Hill stops, gardens, and neighborhood walks.</p>
+      </section>
+
+      <aside class="summary-panel" aria-label="Ranked destination summary">
+        <div class="summary-top">
+          <p class="summary-title">Combined Top Choices</p>
+          <span class="count-pill" id="ranked-count">0 Barbara / 0 Laura</span>
+        </div>
+        <ol class="top-list" id="top-list"></ol>
+        <div class="panel-actions">
+          <button class="action-button" id="share-results" type="button">Share results</button>
+          <button class="action-button" id="copy-results" type="button">Copy results</button>
+          <button class="action-button" id="email-results" type="button">Email results</button>
+          <button class="action-button" id="reset-ranks" type="button">Reset ranks</button>
+          <button class="action-button" id="print-page" type="button">Print</button>
+        </div>
+        <p class="status-line" id="status-line" aria-live="polite"></p>
+      </aside>
+    </header>
+
+    <section class="control-panel" aria-labelledby="control-title">
+      <div>
+        <p class="control-title" id="control-title">View</p>
+        <p class="control-count" id="filter-count">Showing all destinations</p>
+      </div>
+      <div class="control-groups">
+        <div class="sort-buttons" id="sort-buttons" role="group" aria-label="Sort order"></div>
+        <div class="filter-buttons" id="filter-buttons" role="group" aria-label="Destination categories"></div>
+      </div>
+    </section>
+
+    <section class="destination-list" id="destination-list" aria-live="polite"></section>
+
+    <footer class="footer">
+      <span>Visitor notes should be rechecked near spring 2027 because ticket policies can change.</span>
+      <span>
+        <a href="https://www.si.edu/about/museums" target="_blank" rel="noopener">Smithsonian</a>
+        |
+        <a href="https://www.nps.gov/nama/planyourvisit/" target="_blank" rel="noopener">National Mall and Memorial Parks</a>
+        |
+        <a href="https://commons.wikimedia.org/" target="_blank" rel="noopener">Wikimedia Commons photos</a>
+      </span>
+    </footer>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "dc-trip-rankings-v1";
+    const HASH_PREFIX = "dc-scores=";
+
+    const people = [
+      { id: "barbara", label: "Barbara", code: "b" },
+      { id: "laura", label: "Laura", code: "l" }
+    ];
+
+    const codeToPerson = Object.fromEntries(people.map((person) => [person.code, person.id]));
+
+    const sortDefinitions = [
+      { id: "combined", label: "Combined" },
+      ...people.map((person) => ({ id: person.id, label: person.label }))
+    ];
+
+    const categoryDefinitions = [
+      { id: "all", label: "All" },
+      { id: "museum", label: "Museums" },
+      { id: "monument", label: "Monuments" },
+      { id: "memorial", label: "Memorials" },
+      { id: "architecture", label: "Architecture" },
+      { id: "capitol-hill", label: "Capitol Hill" },
+      { id: "documents", label: "Documents" },
+      { id: "garden-walk", label: "Gardens & Walks" },
+      { id: "neighborhood", label: "Neighborhoods" },
+      { id: "timed-entry", label: "Timed Entry" }
+    ];
+
+    const destinations = [
+      {
+        id: "us-capitol",
+        name: "U.S. Capitol & Visitor Center",
+        categoryIds: ["architecture", "capitol-hill", "timed-entry"],
+        area: "Capitol Hill",
+        time: "1.5-2 hr",
+        effort: "Medium",
+        note: "Reserve tour",
+        image: "Capitol_Building_Full_View.jpg",
+        info: "https://www.visitthecapitol.gov/visit",
+        description: "A guided look inside the seat of Congress, typically centered on the Crypt, Rotunda, and National Statuary Hall. It is a strong anchor if they want one formal civic tour."
+      },
+      {
+        id: "library-of-congress",
+        name: "Library of Congress Thomas Jefferson Building",
+        categoryIds: ["architecture", "capitol-hill", "documents", "timed-entry"],
+        area: "Capitol Hill",
+        time: "45-90 min",
+        effort: "Low",
+        note: "Timed pass",
+        image: "Thomas_Jefferson_Building_Aerial_by_Carol_M._Highsmith.jpg",
+        info: "https://www.loc.gov/visit",
+        description: "A compact, beautiful stop for the Great Hall, mosaics, marble staircases, and views into the Main Reading Room. It pairs naturally with the Capitol and Supreme Court."
+      },
+      {
+        id: "supreme-court",
+        name: "Supreme Court of the United States",
+        categoryIds: ["architecture", "capitol-hill"],
+        area: "Capitol Hill",
+        time: "30-75 min",
+        effort: "Low",
+        note: "Check access",
+        image: "US_Supreme_Court_Building.jpg",
+        info: "https://www.supremecourt.gov/visiting/hoursanddirections.aspx",
+        description: "The marble courthouse is worth seeing from the plaza, and public access can include exhibits or courtroom lectures when available. Access can change with Court business."
+      },
+      {
+        id: "national-archives",
+        name: "National Archives Museum",
+        categoryIds: ["museum", "documents", "timed-entry"],
+        area: "Penn Quarter",
+        time: "45-90 min",
+        effort: "Low",
+        note: "Timed entry",
+        image: "US_National_Archives_Building.jpg",
+        info: "https://www.archives.gov/museum/visit",
+        description: "The place to see the Declaration of Independence, Constitution, and Bill of Rights in the Rotunda. Lines can build, so it is best treated as a planned stop."
+      },
+      {
+        id: "national-gallery",
+        name: "National Gallery of Art",
+        categoryIds: ["museum", "architecture", "garden-walk"],
+        area: "National Mall",
+        time: "1.5-3 hr",
+        effort: "Medium",
+        note: "Free",
+        image: "National_Gallery_of_Art_-_2026_(55255088792).jpg",
+        info: "https://www.nga.gov/visit",
+        description: "A major art museum with European and American collections, an I. M. Pei East Building, and a sculpture garden. It can be a focused art stop or a relaxed indoor break."
+      },
+      {
+        id: "air-and-space",
+        name: "National Air and Space Museum",
+        categoryIds: ["museum", "timed-entry"],
+        area: "National Mall",
+        time: "1.5-3 hr",
+        effort: "Medium",
+        note: "Timed pass",
+        image: "National_Air_and_Space_Museum_(55256212753).jpg",
+        info: "https://airandspace.si.edu/visit/museum-dc",
+        description: "Aviation and space history with famous artifacts such as aircraft, spacecraft, and spacesuits. The DC museum has required free timed-entry passes during its renovation era."
+      },
+      {
+        id: "american-history",
+        name: "National Museum of American History",
+        categoryIds: ["museum"],
+        area: "National Mall",
+        time: "1.5-3 hr",
+        effort: "Medium",
+        note: "Free",
+        image: "Aerial_view_of_National_Museum_of_American_History.jpg",
+        info: "https://americanhistory.si.edu/visit",
+        description: "A broad Smithsonian choice for American culture and civic history, from the Star-Spangled Banner to transportation, invention, entertainment, and everyday objects."
+      },
+      {
+        id: "natural-history",
+        name: "National Museum of Natural History",
+        categoryIds: ["museum"],
+        area: "National Mall",
+        time: "1.5-3 hr",
+        effort: "Medium",
+        note: "Free",
+        image: "National_Museum_of_Natural_History_-_2026_(55255088887).jpg",
+        info: "https://naturalhistory.si.edu/visit",
+        description: "A crowd-pleasing museum for fossils, gems, ocean life, mammals, and human origins. It is easy to combine with other Mall museums if they want flexibility."
+      },
+      {
+        id: "african-american-museum",
+        name: "National Museum of African American History and Culture",
+        categoryIds: ["museum", "timed-entry"],
+        area: "National Mall",
+        time: "2-4 hr",
+        effort: "High",
+        note: "Timed pass",
+        image: "National Museum of African American History and Culture, 2020.jpg",
+        info: "https://nmaahc.si.edu/visit/passes",
+        description: "A powerful Smithsonian museum covering African American history, culture, and community. It is emotionally substantial and best ranked high only if they want to give it real time."
+      },
+      {
+        id: "holocaust-museum",
+        name: "United States Holocaust Memorial Museum",
+        categoryIds: ["museum", "memorial", "timed-entry"],
+        area: "Near National Mall",
+        time: "2-3 hr",
+        effort: "High",
+        note: "Timed ticket",
+        image: "The United States Holocaust Memorial Museum (USHMM) (53831937253).jpg",
+        info: "https://www.ushmm.org/information/visit-the-museum/admission-tickets/",
+        description: "A solemn, serious museum centered on Holocaust history and memory. The Permanent Exhibition uses timed-entry tickets and may be too heavy for a packed sightseeing day."
+      },
+      {
+        id: "american-indian",
+        name: "National Museum of the American Indian",
+        categoryIds: ["museum", "architecture"],
+        area: "National Mall",
+        time: "1-2 hr",
+        effort: "Low",
+        note: "Free",
+        image: "National_Museum_of_the_American_Indian.jpg",
+        info: "https://americanindian.si.edu/visit",
+        description: "A Smithsonian museum with a curving limestone exterior, Indigenous art and history, and a well-known cafe. It is close to the Capitol and Air and Space."
+      },
+      {
+        id: "american-art-portrait",
+        name: "Smithsonian American Art Museum & National Portrait Gallery",
+        categoryIds: ["museum", "architecture"],
+        area: "Penn Quarter",
+        time: "1.5-3 hr",
+        effort: "Low",
+        note: "Free",
+        image: "Old_Patent_Office,_Washington,_D.C._2011.jpg",
+        info: "https://americanart.si.edu/visit/saam",
+        description: "Two Smithsonian museums in the Old Patent Office Building, with portraits, American art, and the glass-covered Kogod Courtyard. It is useful if evening hours run later than Mall museums."
+      },
+      {
+        id: "lincoln-memorial",
+        name: "Lincoln Memorial",
+        categoryIds: ["memorial", "architecture", "garden-walk"],
+        area: "West National Mall",
+        time: "30-60 min",
+        effort: "Medium",
+        note: "Steps",
+        image: "Lincoln-Memorial_WashingtonDC.jpg",
+        info: "https://www.nps.gov/places/lincoln-memorial.htm",
+        description: "One of DC's essential stops, with the seated Lincoln statue, inscriptions, and a long view over the Reflecting Pool. It also links well to the Vietnam and Korean memorials."
+      },
+      {
+        id: "vietnam-memorial",
+        name: "Vietnam Veterans Memorial",
+        categoryIds: ["memorial", "garden-walk"],
+        area: "West National Mall",
+        time: "20-45 min",
+        effort: "Low",
+        note: "Quiet stop",
+        image: "Vietnam Veterans Memorial, Washington, D.C. (3cacbfd1-7866-4a46-b81d-e12815a05f09).jpg",
+        info: "https://www.nps.gov/places/000/vietnam-veterans-memorial.htm",
+        description: "A moving, minimal memorial centered on the black granite wall of names. It is a natural short stop immediately northeast of the Lincoln Memorial."
+      },
+      {
+        id: "korean-war-memorial",
+        name: "Korean War Veterans Memorial",
+        categoryIds: ["memorial", "garden-walk"],
+        area: "West National Mall",
+        time: "20-45 min",
+        effort: "Low",
+        note: "Near Lincoln",
+        image: "Korean War Veteran's Memorial.jpg",
+        info: "https://www.nps.gov/places/000/korean-war-veterans-memorial.htm",
+        description: "A vivid memorial with stainless-steel service member figures, a mural wall, and a quiet setting near the Lincoln Memorial. It is especially effective as part of a memorial walk."
+      },
+      {
+        id: "wwii-memorial",
+        name: "World War II Memorial",
+        categoryIds: ["memorial", "monument", "garden-walk"],
+        area: "National Mall",
+        time: "25-50 min",
+        effort: "Low",
+        note: "Open plaza",
+        image: "National World War II Memorial - Washington DC - USA - panoramio.jpg",
+        info: "https://www.nps.gov/places/national-world-war-ii-memorial.htm",
+        description: "A large open memorial between the Washington Monument and Lincoln Memorial, with fountains, state pillars, and Atlantic and Pacific arches. It fits well into a Mall walk."
+      },
+      {
+        id: "washington-monument",
+        name: "Washington Monument",
+        categoryIds: ["monument", "architecture", "timed-entry", "garden-walk"],
+        area: "National Mall",
+        time: "20-90 min",
+        effort: "Low",
+        note: "Tickets for top",
+        image: "Dc washington monument.jpg",
+        info: "https://www.recreation.gov/ticket/facility/234635",
+        description: "The obelisk is easy to admire from the Mall, and the elevator view is a bigger commitment. If going inside matters, check the current ticket release rules."
+      },
+      {
+        id: "jefferson-memorial",
+        name: "Jefferson Memorial & Tidal Basin",
+        categoryIds: ["memorial", "architecture", "garden-walk"],
+        area: "Tidal Basin",
+        time: "45-90 min",
+        effort: "Medium",
+        note: "Scenic walk",
+        image: "Jefferson Memorial At Dusk 1.jpg",
+        info: "https://www.nps.gov/thje/index.htm",
+        description: "A domed memorial on the Tidal Basin with wide water views. It is beautiful but less central than the Lincoln-to-WWII corridor, so it competes for walking time."
+      },
+      {
+        id: "mlk-memorial",
+        name: "Martin Luther King Jr. Memorial",
+        categoryIds: ["memorial", "garden-walk"],
+        area: "Tidal Basin",
+        time: "25-60 min",
+        effort: "Low",
+        note: "Tidal Basin",
+        image: "Martin Luther King, Jr Memorial, Washington D C (43627795282).jpg",
+        info: "https://www.nps.gov/places/martin-luther-king-jr-memorial.htm",
+        description: "A Tidal Basin memorial centered on the Stone of Hope and quotations from Dr. King. It can combine with the FDR and Jefferson memorials."
+      },
+      {
+        id: "fdr-memorial",
+        name: "Franklin Delano Roosevelt Memorial",
+        categoryIds: ["memorial", "garden-walk"],
+        area: "Tidal Basin",
+        time: "35-75 min",
+        effort: "Medium",
+        note: "Longer walk",
+        image: "Washington DC August 2014 33 (Franklin Delano Roosevelt Memorial).jpg",
+        info: "https://www.nps.gov/places/franklin-delano-roosevelt-memorial.htm",
+        description: "A series of outdoor rooms with water, stone, and sculpture representing FDR's presidency. It is more spread out than many memorials and rewards a slower pace."
+      },
+      {
+        id: "botanic-garden",
+        name: "United States Botanic Garden",
+        categoryIds: ["museum", "garden-walk", "capitol-hill"],
+        area: "Capitol Hill",
+        time: "45-90 min",
+        effort: "Low",
+        note: "Indoor garden",
+        image: "United States Botanic Garden, National Mall, Washington DC (3077350078).jpg",
+        info: "https://www.usbg.gov/visit",
+        description: "A living plant museum beside the Capitol, with a conservatory and garden spaces. It is a pleasant reset if the day has too many stone buildings and security lines."
+      },
+      {
+        id: "fords-theatre",
+        name: "Ford's Theatre",
+        categoryIds: ["museum", "architecture", "timed-entry"],
+        area: "Penn Quarter",
+        time: "45-90 min",
+        effort: "Low",
+        note: "Timed ticket",
+        image: "Ford's Theatre, Washington DC.jpg",
+        info: "https://fords.org/visit-us/plan-your-visit/",
+        description: "The historic theater and museum connected to Abraham Lincoln's assassination. The visit schedule varies, and advance timed tickets are strongly worth checking."
+      },
+      {
+        id: "arlington-cemetery",
+        name: "Arlington National Cemetery",
+        categoryIds: ["memorial", "garden-walk"],
+        area: "Arlington, VA",
+        time: "2-4 hr",
+        effort: "High",
+        note: "Half-day option",
+        image: "Arlington_National_Cemetery_Washington_DC.jpg",
+        info: "https://www.arlingtoncemetery.mil/Visit",
+        description: "A major, solemn visit across the Potomac, including the Tomb of the Unknown Soldier and expansive grounds. It is worthwhile but can consume much of a one-day itinerary."
+      },
+      {
+        id: "georgetown",
+        name: "Georgetown Waterfront & C&O Canal",
+        categoryIds: ["neighborhood", "garden-walk"],
+        area: "Georgetown",
+        time: "1.5-3 hr",
+        effort: "Medium",
+        note: "Food/walk",
+        image: "C&O Canal in Georgetown, Washington, DC.jpg",
+        info: "https://www.nps.gov/places/georgetown-waterfront-park.htm",
+        description: "A scenic change of pace with Potomac views, canal paths, old streets, shops, and restaurants. It is better as a late-day wind-down than as a first stop."
+      }
+    ];
+
+    const categoryLabels = Object.fromEntries(
+      categoryDefinitions.map((category) => [category.id, category.label])
+    );
+
+    const personLabels = Object.fromEntries(
+      people.map((person) => [person.id, person.label])
+    );
+
+    const listEl = document.querySelector("#destination-list");
+    const filterButtonsEl = document.querySelector("#filter-buttons");
+    const sortButtonsEl = document.querySelector("#sort-buttons");
+    const filterCountEl = document.querySelector("#filter-count");
+    const topListEl = document.querySelector("#top-list");
+    const rankedCountEl = document.querySelector("#ranked-count");
+    const shareButton = document.querySelector("#share-results");
+    const copyButton = document.querySelector("#copy-results");
+    const emailButton = document.querySelector("#email-results");
+    const resetButton = document.querySelector("#reset-ranks");
+    const printButton = document.querySelector("#print-page");
+    const statusLineEl = document.querySelector("#status-line");
+
+    let activeCategory = "all";
+    let sortMode = "combined";
+    let rankings = loadRankings();
+    saveRankings();
+
+    function loadRankings() {
+      const hashRankings = parseRankingsFromHash();
+      if (Object.keys(hashRankings).length) return hashRankings;
+
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : {};
+        return sanitizeRankings(parsed);
+      } catch {
+        return {};
+      }
+    }
+
+    function sanitizeRankings(value) {
+      const validIds = new Set(destinations.map((destination) => destination.id));
+      const validPeople = new Set(people.map((person) => person.id));
+      const clean = {};
+
+      Object.entries(value || {}).forEach(([id, scores]) => {
+        if (!validIds.has(id) || typeof scores !== "object" || !scores) return;
+        const cleanScores = {};
+
+        Object.entries(scores).forEach(([personId, score]) => {
+          const numericScore = Number(score);
+          if (
+            validPeople.has(personId) &&
+            Number.isInteger(numericScore) &&
+            numericScore >= 1 &&
+            numericScore <= 100
+          ) {
+            cleanScores[personId] = numericScore;
+          }
+        });
+
+        if (Object.keys(cleanScores).length) clean[id] = cleanScores;
+      });
+
+      return clean;
+    }
+
+    function parseRankingsFromHash() {
+      const hash = (window.location.hash || "").replace(/^#/, "");
+      if (!hash.startsWith(HASH_PREFIX)) return {};
+
+      const entries = hash.slice(HASH_PREFIX.length).split(",").filter(Boolean);
+      const parsed = {};
+
+      entries.forEach((entry) => {
+        const [encodedId, encodedScores] = entry.split(":");
+        const id = decodeURIComponent(encodedId || "");
+        if (!id || !encodedScores) return;
+
+        const scores = {};
+        encodedScores.split(".").forEach((token) => {
+          const code = token.slice(0, 1);
+          const personId = codeToPerson[code];
+          const score = Number(token.slice(1));
+          if (personId) scores[personId] = score;
+        });
+
+        parsed[id] = scores;
+      });
+
+      return sanitizeRankings(parsed);
+    }
+
+    function saveRankings() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(rankings));
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function commonsImageUrl(file) {
+      return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}?width=900`;
+    }
+
+    function commonsFileUrl(file) {
+      return `https://commons.wikimedia.org/wiki/File:${encodeURIComponent(file)}`;
+    }
+
+    function scoreFor(destination, mode = sortMode) {
+      const scores = rankings[destination.id] || {};
+      if (mode !== "combined") return scores[mode] || 0;
+      const total = people.reduce((sum, person) => sum + (scores[person.id] || 0), 0);
+      return Math.round(total / people.length);
+    }
+
+    function rankedCountFor(destination) {
+      const scores = rankings[destination.id] || {};
+      return people.filter((person) => scores[person.id] > 0).length;
+    }
+
+    function sortedDestinations(mode = sortMode) {
+      return destinations
+        .map((destination, index) => ({
+          ...destination,
+          order: index,
+          sortScore: scoreFor(destination, mode),
+          rankedCount: rankedCountFor(destination)
+        }))
+        .sort((a, b) => {
+          if (b.sortScore !== a.sortScore) return b.sortScore - a.sortScore;
+          if (b.rankedCount !== a.rankedCount) return b.rankedCount - a.rankedCount;
+          return a.order - b.order;
+        });
+    }
+
+    function destinationsForCategory(sorted, categoryId = activeCategory) {
+      if (categoryId === "all") return sorted;
+      return sorted.filter((destination) => destination.categoryIds.includes(categoryId));
+    }
+
+    function categoryLabel(categoryId) {
+      return categoryLabels[categoryId] || categoryId;
+    }
+
+    function renderSortButtons() {
+      sortButtonsEl.innerHTML = sortDefinitions.map((sort) => {
+        const pressed = sort.id === sortMode ? "true" : "false";
+        return `
+          <button
+            class="sort-button"
+            type="button"
+            data-sort="${escapeHtml(sort.id)}"
+            aria-pressed="${pressed}"
+          >
+            ${escapeHtml(sort.label)}
+          </button>
+        `;
+      }).join("");
+    }
+
+    function renderFilterButtons(sorted) {
+      filterButtonsEl.innerHTML = categoryDefinitions.map((category) => {
+        const count = destinationsForCategory(sorted, category.id).length;
+        const pressed = category.id === activeCategory ? "true" : "false";
+        const countText = category.id === "all" ? destinations.length : count;
+        return `
+          <button
+            class="filter-button"
+            type="button"
+            data-category="${escapeHtml(category.id)}"
+            aria-pressed="${pressed}"
+          >
+            ${escapeHtml(category.label)} ${countText}
+          </button>
+        `;
+      }).join("");
+    }
+
+    function renderFilterCount(visibleCount) {
+      const sortLabel = sortDefinitions.find((definition) => definition.id === sortMode)?.label || "Combined";
+      if (activeCategory === "all") {
+        filterCountEl.textContent = `Showing all ${visibleCount} destinations - ${sortLabel} sort`;
+        return;
+      }
+
+      filterCountEl.textContent = `Showing ${visibleCount} destinations in ${categoryLabel(activeCategory)} - ${sortLabel} sort`;
+    }
+
+    function serializeRankings() {
+      return destinations
+        .map((destination) => {
+          const scores = rankings[destination.id] || {};
+          const tokens = people
+            .filter((person) => scores[person.id] > 0)
+            .map((person) => `${person.code}${scores[person.id]}`);
+
+          if (!tokens.length) return "";
+          return `${encodeURIComponent(destination.id)}:${tokens.join(".")}`;
+        })
+        .filter(Boolean)
+        .join(",");
+    }
+
+    function buildShareUrl() {
+      const url = new URL(window.location.href);
+      const serialized = serializeRankings();
+      url.hash = serialized ? `${HASH_PREFIX}${serialized}` : "";
+      return url.toString();
+    }
+
+    function buildOptions(selectedScore) {
+      let options = '<option value="">-</option>';
+      for (let score = 100; score >= 1; score -= 1) {
+        const selected = score === selectedScore ? " selected" : "";
+        options += `<option value="${score}"${selected}>${score}</option>`;
+      }
+      return options;
+    }
+
+    function renderTopList(sorted) {
+      const ranked = sorted.filter((destination) => destination.sortScore > 0);
+      const counts = Object.fromEntries(
+        people.map((person) => [
+          person.id,
+          destinations.filter((destination) => (rankings[destination.id] || {})[person.id] > 0).length
+        ])
+      );
+
+      rankedCountEl.textContent = `${counts.barbara} Barbara / ${counts.laura} Laura`;
+
+      if (!ranked.length) {
+        topListEl.innerHTML = '<li class="empty-state">No ranks yet</li>';
+        return;
+      }
+
+      topListEl.innerHTML = ranked.slice(0, 6).map((destination) => {
+        const scores = rankings[destination.id] || {};
+        const detail = people
+          .map((person) => `${person.label}: ${scores[person.id] || "-"}`)
+          .join(" | ");
+
+        return `
+          <li>
+            <span class="top-score">${destination.sortScore}</span>
+            <span>
+              <span class="top-name">${escapeHtml(destination.name)}</span>
+              <span class="top-detail">${escapeHtml(detail)}</span>
+            </span>
+          </li>
+        `;
+      }).join("");
+    }
+
+    function statusMessage(message) {
+      statusLineEl.textContent = message;
+      window.setTimeout(() => {
+        if (statusLineEl.textContent === message) statusLineEl.textContent = "";
+      }, 4200);
+    }
+
+    function buildResultsText() {
+      const ranked = sortedDestinations("combined").filter((destination) => destination.sortScore > 0);
+      const date = new Date().toLocaleString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      });
+
+      if (!ranked.length) {
+        return [
+          "Washington DC trip rankings",
+          "Trip date: Thursday, May 27, 2027",
+          "Travelers: Barbara and Laura",
+          `Generated: ${date}`,
+          "",
+          "No destinations have been ranked yet.",
+          "",
+          `Planner: ${buildShareUrl()}`
+        ].join("\n");
+      }
+
+      const lines = ranked.map((destination, index) => {
+        const scores = rankings[destination.id] || {};
+        const rank = String(index + 1).padStart(2, "0");
+        const scoreText = people
+          .map((person) => `${person.label}: ${scores[person.id] || "-"}`)
+          .join(" | ");
+        return `${rank}. Combined ${destination.sortScore} - ${destination.name} (${scoreText}; ${destination.area}, ${destination.time})`;
+      });
+
+      return [
+        "Washington DC trip rankings",
+        "Trip date: Thursday, May 27, 2027",
+        "Travelers: Barbara and Laura",
+        `Generated: ${date}`,
+        "",
+        ...lines,
+        "",
+        `Open ranked list: ${buildShareUrl()}`,
+        "",
+        "Scale: 100 = highest interest, 1 = lowest interest. Combined score averages Barbara and Laura, with blank scores counted as 0."
+      ].join("\n");
+    }
+
+    async function copyResultsText(text) {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return;
+      }
+
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.setAttribute("readonly", "");
+      textArea.style.position = "fixed";
+      textArea.style.top = "-1000px";
+      document.body.appendChild(textArea);
+      textArea.select();
+      const copied = document.execCommand("copy");
+      document.body.removeChild(textArea);
+      if (!copied) throw new Error("Copy command was not available.");
+    }
+
+    function renderDestinations(focusedId = null, focusedPersonId = null) {
+      const sorted = sortedDestinations();
+      const visible = destinationsForCategory(sorted);
+      renderTopList(sorted);
+      renderSortButtons();
+      renderFilterButtons(sorted);
+      renderFilterCount(visible.length);
+
+      listEl.innerHTML = visible.map((destination) => {
+        const scores = rankings[destination.id] || {};
+        const scoreText = destination.sortScore ? destination.sortScore : "-";
+        const ribbonClass = destination.sortScore ? "score-ribbon" : "score-ribbon is-empty";
+        const fallback = destination.name.slice(0, 1);
+        const categoryTags = destination.categoryIds.map(categoryLabel);
+        const tags = [...categoryTags, destination.area, destination.time, destination.effort, destination.note]
+          .map((tag) => `<li>${escapeHtml(tag)}</li>`)
+          .join("");
+
+        const rankControls = people.map((person) => `
+          <div class="rank-control">
+            <label for="rank-${escapeHtml(destination.id)}-${escapeHtml(person.id)}">${escapeHtml(person.label)} rank</label>
+            <select
+              class="ranking-select"
+              id="rank-${escapeHtml(destination.id)}-${escapeHtml(person.id)}"
+              data-rank-id="${escapeHtml(destination.id)}"
+              data-person-id="${escapeHtml(person.id)}"
+              aria-label="${escapeHtml(person.label)} rank for ${escapeHtml(destination.name)}, 100 high"
+            >
+              ${buildOptions(scores[person.id] || 0)}
+            </select>
+          </div>
+        `).join("");
+
+        return `
+          <article class="destination-card" data-destination="${escapeHtml(destination.id)}">
+            <span class="${ribbonClass}" aria-label="Current combined score">
+              ${scoreText}
+              <small>${sortMode === "combined" ? "avg" : escapeHtml(personLabels[sortMode] || "rank")}</small>
+            </span>
+            <figure class="photo" data-fallback="${escapeHtml(fallback)}">
+              <img
+                src="${commonsImageUrl(destination.image)}"
+                alt="${escapeHtml(destination.name)} in Washington DC"
+                loading="lazy"
+                onerror="this.closest('.photo').classList.add('is-missing')"
+              >
+              <a class="photo-credit" href="${commonsFileUrl(destination.image)}" target="_blank" rel="noopener">Photo source</a>
+            </figure>
+            <div class="card-body">
+              <div class="card-head">
+                <div>
+                  <h2>${escapeHtml(destination.name)}</h2>
+                </div>
+                <div class="rank-grid">
+                  ${rankControls}
+                </div>
+              </div>
+
+              <ul class="meta" aria-label="Visit notes">${tags}</ul>
+
+              <div class="copy">
+                <p>${escapeHtml(destination.description)}</p>
+              </div>
+
+              <div class="source-row">
+                <a href="${escapeHtml(destination.info)}" target="_blank" rel="noopener">Destination info</a>
+                <a href="${commonsFileUrl(destination.image)}" target="_blank" rel="noopener">Photo details</a>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      if (focusedId) {
+        requestAnimationFrame(() => {
+          const card = document.querySelector(`[data-destination="${CSS.escape(focusedId)}"]`);
+          const selector = `[data-rank-id="${CSS.escape(focusedId)}"][data-person-id="${CSS.escape(focusedPersonId || "")}"]`;
+          const select = document.querySelector(selector);
+          if (card) {
+            card.classList.add("is-pulse");
+            window.setTimeout(() => card.classList.remove("is-pulse"), 460);
+          }
+          if (select) select.focus({ preventScroll: true });
+        });
+      }
+    }
+
+    listEl.addEventListener("change", (event) => {
+      const select = event.target.closest("[data-rank-id][data-person-id]");
+      if (!select) return;
+
+      const id = select.dataset.rankId;
+      const personId = select.dataset.personId;
+      const score = Number(select.value);
+      const nextScores = { ...(rankings[id] || {}) };
+
+      if (Number.isInteger(score) && score >= 1 && score <= 100) {
+        nextScores[personId] = score;
+      } else {
+        delete nextScores[personId];
+      }
+
+      if (Object.keys(nextScores).length) {
+        rankings[id] = nextScores;
+      } else {
+        delete rankings[id];
+      }
+
+      saveRankings();
+      renderDestinations(id, personId);
+    });
+
+    filterButtonsEl.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-category]");
+      if (!button) return;
+
+      activeCategory = button.dataset.category;
+      renderDestinations();
+    });
+
+    sortButtonsEl.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-sort]");
+      if (!button) return;
+
+      sortMode = button.dataset.sort;
+      renderDestinations();
+    });
+
+    shareButton.addEventListener("click", async () => {
+      const text = buildResultsText();
+      try {
+        if (navigator.share) {
+          await navigator.share({
+            title: "Washington DC trip rankings",
+            text,
+            url: buildShareUrl()
+          });
+          statusMessage("Shared results.");
+        } else {
+          await copyResultsText(text);
+          statusMessage("Share is unavailable, so results were copied.");
+        }
+      } catch (error) {
+        if (error && error.name === "AbortError") {
+          statusMessage("Share cancelled.");
+          return;
+        }
+        window.location.href = `mailto:?subject=${encodeURIComponent("Washington DC trip rankings")}&body=${encodeURIComponent(text)}`;
+      }
+    });
+
+    copyButton.addEventListener("click", async () => {
+      try {
+        await copyResultsText(buildResultsText());
+        statusMessage("Copied ranked results.");
+      } catch {
+        statusMessage("Copy was not available. Use Email results instead.");
+      }
+    });
+
+    emailButton.addEventListener("click", () => {
+      const text = buildResultsText();
+      window.location.href = `mailto:?subject=${encodeURIComponent("Washington DC trip rankings")}&body=${encodeURIComponent(text)}`;
+    });
+
+    resetButton.addEventListener("click", () => {
+      rankings = {};
+      saveRankings();
+      renderDestinations();
+    });
+
+    printButton.addEventListener("click", () => {
+      window.print();
+    });
+
+    renderDestinations();
+  </script>
+</body>
+</html>
