@@ -1305,9 +1305,11 @@
       try {
         const localRankings = canonicalRankings(rankings);
         const remoteRankings = await fetchRemoteRankings();
-        const mergedRankings = hasRankings(localRankings)
-          ? mergeRankings(remoteRankings, localRankings)
-          : remoteRankings;
+        const remoteHasRankings = hasRankings(remoteRankings);
+        const localHasRankings = hasRankings(localRankings);
+        const mergedRankings = remoteHasRankings
+          ? remoteRankings
+          : (localHasRankings ? mergeRankings(remoteRankings, localRankings) : remoteRankings);
 
         if (rankingsSignature(mergedRankings) !== rankingsSignature(rankings)) {
           rankings = mergedRankings;
