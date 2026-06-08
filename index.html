@@ -1197,6 +1197,11 @@
       return categoryLabels[categoryId] || categoryId;
     }
 
+    function effortLabel(effort) {
+      if (!effort) return "";
+      return `${effort} effort`;
+    }
+
     function renderSortButtons() {
       sortButtonsEl.innerHTML = sortDefinitions.map((sort) => {
         const pressed = sort.id === sortMode ? "true" : "false";
@@ -1391,7 +1396,7 @@
         const ribbonClass = destination.sortScore ? "score-ribbon" : "score-ribbon is-empty";
         const fallback = destination.name.slice(0, 1);
         const categoryTags = destination.categoryIds.map(categoryLabel);
-        const tags = [...categoryTags, destination.area, destination.time, destination.effort, destination.note]
+        const tags = [...categoryTags, destination.area, destination.time, effortLabel(destination.effort), destination.note]
           .map((tag) => `<li>${escapeHtml(tag)}</li>`)
           .join("");
 
